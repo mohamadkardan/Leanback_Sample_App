@@ -4,6 +4,7 @@ import android.R
 import android.content.Context
 import android.view.View.GONE
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.leanback.widget.BaseCardView
 import androidx.leanback.widget.ImageCardView
 import androidx.leanback.widget.Presenter
@@ -13,8 +14,8 @@ import com.example.leanbackpaging.model.Movie
 
 class MoviesCardViewPresenter : Presenter() {
 
-    private val CARD_WIDTH = 313
-    private val CARD_HEIGHT = 176
+    private val CARD_WIDTH = 400
+    private val CARD_HEIGHT = 200
 
     private lateinit var mContext: Context
 
@@ -30,23 +31,25 @@ class MoviesCardViewPresenter : Presenter() {
         }
 
         cardView.infoVisibility = GONE
-
         cardView.isFocusable = true
         cardView.isFocusableInTouchMode = true
+        cardView.setMainImageAdjustViewBounds(false)
         return ViewHolder(cardView)
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, item: Any?) {
-        val movie = item as Movie
         val cardView = viewHolder.view as ImageCardView
 
-//        val res = mContext.resources
-//        val width: Int = res.getDimensionPixelSize(com.example.leanbackpaging.R.dimen.poster_width)
-//        val height: Int =
-//            res.getDimensionPixelSize(com.example.leanbackpaging.R.dimen.poster_height)
-//        cardView.setMainImageDimensions(width, height)
+        if (item != null) {
 
-        Glide.with(viewHolder.view).load(movie.poster_path).into(cardView.mainImageView)
+            val movie = item as Movie
+            cardView.mainImageView.scaleType = ImageView.ScaleType.CENTER_CROP
+
+            Glide.with(viewHolder.view).load("https://image.tmdb.org/t/p/w780" + movie.poster_path)
+                .into(cardView.mainImageView)
+
+        }
+
     }
 
     override fun onUnbindViewHolder(viewHolder: ViewHolder) {

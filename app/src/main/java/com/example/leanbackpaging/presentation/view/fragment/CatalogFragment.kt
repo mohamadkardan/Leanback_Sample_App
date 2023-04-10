@@ -1,43 +1,67 @@
-package com.example.leanbackpaging.view.fragment
+package com.example.leanbackpaging.presentation.view.fragment
 
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.leanback.app.BrowseSupportFragment
+import androidx.leanback.paging.PagingDataAdapter
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.HeaderItem
 import androidx.leanback.widget.ListRow
 import androidx.leanback.widget.ListRowPresenter
-import androidx.leanback.widget.ObjectAdapter
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.LoadState
-import com.example.leanbackpaging.R
-import com.example.leanbackpaging.adapter.MoviesListAdapter
+import androidx.paging.PagingData
 import com.example.leanbackpaging.model.Movie
 import com.example.leanbackpaging.presentation.view.getMoviePagingAdapter
 import com.example.leanbackpaging.presentation.view.itempresenter.MoviesCardViewPresenter
 import com.example.leanbackpaging.presentation.viewmodel.CatalogViewModel
+import com.util.isAdapterNotEmpty
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
+@AndroidEntryPoint
 class CatalogFragment : BrowseSupportFragment() {
 
+    lateinit var mRowsAdapter: ArrayObjectAdapter
     val catalogViewModel: CatalogViewModel by viewModels()
-    var mRowsAdapter: ArrayObjectAdapter? = null
-    val videoPagingAdapter = getMoviePagingAdapter(MoviesCardViewPresenter())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mRowsAdapter = ArrayObjectAdapter(ListRowPresenter())
-        buildRowsAdapter(getMoviesList())
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupUIElements()
+        mRowsAdapter = ArrayObjectAdapter(ListRowPresenter())
+        adapter = mRowsAdapter
+        getPopularTVShows()
+
     }
+
+    private fun getPopularTVShows() {
+        val pagingAdapter = getMoviePagingAdapter(MoviesCardViewPresenter())
+        viewLifecycleOwner.lifecycleScope.launch {
+            catalogViewModel.getPopularTvShowsWithPaging(1)
+                .collectLatest {
+                    pagingAdapter.submitData(it)
+                }
+        }
+        addMovieRow(pagingAdapter)
+    }
+
+    private fun addMovieRow(pagingAdapter: PagingDataAdapter<Movie>) {
+        val listRow = ListRow(pagingAdapter)
+        viewLifecycleOwner.lifecycleScope.launch {
+            mRowsAdapter.indexOf(listRow)
+            ListRow(HeaderItem("Popular TV Shows"), pagingAdapter)
+
+            mRowsAdapter.add(listRow)
+        }
+    }
+
 
     private fun setupUIElements() {
         title = "NetBox"
@@ -62,38 +86,39 @@ class CatalogFragment : BrowseSupportFragment() {
 //
 //    }
 
-    private fun loadInitialRows(
-        moviesList: List<Movie>?
-    ) {
 
-        if (moviesList.isNullOrEmpty()) {
-            Toast.makeText(requireContext(), "error happened", Toast.LENGTH_SHORT).show()
-            requireActivity().finish()
-            return
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            val videoPagingAdapter = getMoviePagingAdapter(MoviesCardViewPresenter())
-
-            catalogViewModel.getPopularTvShows(1)
-                .collectLatest {
-                    videoPagingAdapter.submitData(it)
-                }
-            }
-
-            val header = HeaderItem("Popular Shows")
-            val row = ListRow(header, videoPagingAdapter)
-            mRowsAdapter?.add(row)
-
-        // Add other playlist header (data will add on scroll)
-//        for (i in maxFirstLoadingRows until playLists.size) {
-//            val header = HeaderItem(i.toLong(), playLists[i].name ?: "")
-//            val row = ListRow(header, ArrayObjectAdapter())
-//            mRowsAdapter.add(row)
+//    private fun loadInitialRows(
+//        moviesList: List<Movie>?
+//    ) {
+//
+//        if (moviesList.isNullOrEmpty()) {
+//            Toast.makeText(requireContext(), "error happened", Toast.LENGTH_SHORT).show()
+//            requireActivity().finish()
+//            return
 //        }
-
-        adapter = mRowsAdapter
-    }
+//
+//        viewLifecycleOwner.lifecycleScope.launch {
+//            val videoPagingAdapter = getMoviePagingAdapter(MoviesCardViewPresenter())
+//
+//            catalogViewModel.getPopularTvShows(1)
+//                .collectLatest {
+//                    videoPagingAdapter.submitData(it)
+//                }
+//        }
+//
+//        val header = HeaderItem("Popular Shows")
+//        val row = ListRow(header, videoPagingAdapter)
+//        mRowsAdapter?.add(row)
+//
+//        // Add other playlist header (data will add on scroll)
+////        for (i in maxFirstLoadingRows until playLists.size) {
+////            val header = HeaderItem(i.toLong(), playLists[i].name ?: "")
+////            val row = ListRow(header, ArrayObjectAdapter())
+////            mRowsAdapter.add(row)
+////        }
+//
+//        adapter = mRowsAdapter
+//    }
 
 
     private fun buildRowsAdapter(moviesList: List<Movie>) {
