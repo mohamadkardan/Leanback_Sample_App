@@ -1,10 +1,13 @@
 package com.example.leanbackpaging.presentation.view.itempresenter
 
-import android.R
+import com.example.leanbackpaging.R
 import android.content.Context
+import android.util.Log
+import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.leanback.widget.BaseCardView
 import androidx.leanback.widget.ImageCardView
 import androidx.leanback.widget.Presenter
@@ -41,15 +44,22 @@ class MoviesCardViewPresenter : Presenter() {
         val cardView = viewHolder.view as ImageCardView
 
         if (item != null) {
-
             val movie = item as Movie
             cardView.mainImageView.scaleType = ImageView.ScaleType.CENTER_CROP
 
-            Glide.with(viewHolder.view).load("https://image.tmdb.org/t/p/w780" + movie.poster_path)
+            Glide.with(viewHolder.view)
+                .load("https://image.tmdb.org/t/p/w780" + movie.poster_path)
+                .placeholder(R.drawable.placeholder)
                 .into(cardView.mainImageView)
-
         }
 
+        setOnItemClicked(cardView, item as Movie)
+    }
+
+    private fun setOnItemClicked(view: ImageCardView, item: Movie?) {
+        view.setOnClickListener {
+            Log.d("TEST", "setOnItemClicked: ${item?.poster_path}")
+        }
     }
 
     override fun onUnbindViewHolder(viewHolder: ViewHolder) {
