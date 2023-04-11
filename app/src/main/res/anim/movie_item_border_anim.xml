@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:ordering="sequentially">
+
+    <objectAnimator
+        android:duration="500"
+        android:propertyName="strokeColor"
+        android:valueTo="#00FF00"
+        android:valueType="colorType" />
+
+    <objectAnimator
+        android:duration="500"
+        android:propertyName="strokeColor"
+        android:valueTo="#FF0000"
+        android:startOffset="500"
+        android:valueType="colorType" />
+
+</set>

@@ -15,22 +15,28 @@ import javax.inject.Singleton
 class MoviePagingSource @Inject constructor(val apiService: ApiService) :
     PagingSource<Int, Movie>() {
 
+    val genreId: Int = 1
+
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Movie> {
         try {
             // Start refresh at page 1 if undefined.
             val page = params.key ?: 1
 
-            Log.d("SearchPagingSource", page.toString())
+//            val response =
+//                apiService.getPopularTVShows(
+//                    page = page
+//                )
 
             val response =
-                apiService.getPopularTVShows(
-                    page = page
+                apiService.getMoviesByGenre(
+                    page = page,
+                    genreId = genreId
                 )
 
             val body = response.body()
 
             val videos =
-                body?.results?.filterNotNull()?.filter { it.id != null }.orEmpty()
+                body?.data?.filter { it.id != null }.orEmpty()
 
             val prevKey = if (page > 1) page - 1 else null
 

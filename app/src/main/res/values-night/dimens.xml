@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="poster_width">280</dimen>
-    <dimen name="poster_height">350</dimen>
     <dimen name="lb_basic_card_selected_overlay_thickness">22dp</dimen>
 </resources>

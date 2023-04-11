@@ -9,6 +9,7 @@ import androidx.paging.liveData
 import com.example.leanbackpaging.data.api.ApiService
 import com.example.leanbackpaging.data.util.Resource
 import com.example.leanbackpaging.domain.repository.AppRepository
+import com.example.leanbackpaging.model.Genre
 import com.example.leanbackpaging.model.Movie
 import com.example.leanbackpaging.model.PopularTvShowsResponse
 import com.example.leanbackpaging.pagingSource.MoviePagingSource
@@ -17,17 +18,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GetPopularTvShowsUseCase @Inject constructor(private val apiService: ApiService) {
+class GetGenresUseCase @Inject constructor(private val appRepository: AppRepository) {
 
-    private val moviePagingSource by lazy {
-        MoviePagingSource(apiService)
-    }
-
-    fun executeWithPaging(page: Int): Flow<PagingData<Movie>> =
-        Pager(
-            config = PagingConfig(page, enablePlaceholders = true, maxSize = 10),
-            pagingSourceFactory = {
-                moviePagingSource
-            }).flow
+    suspend fun execute(): Resource<List<Genre>> = appRepository.getGenres()
 
 }

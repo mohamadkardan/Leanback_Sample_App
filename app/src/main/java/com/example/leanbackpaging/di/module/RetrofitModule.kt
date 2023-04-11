@@ -30,7 +30,7 @@ class RetrofitModule {
     @Provides
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
-        return Retrofit.Builder().baseUrl("https://api.themoviedb.org/3/")
+        return Retrofit.Builder().baseUrl("https://moviesapi.ir/api/v1/")
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttpClient)
             .build()

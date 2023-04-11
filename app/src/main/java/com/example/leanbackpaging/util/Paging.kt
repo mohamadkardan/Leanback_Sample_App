@@ -1,4 +1,4 @@
-package com.util
+package com.example.leanbackpaging.util
 
 import android.nfc.tech.MifareUltralight.PAGE_SIZE
 import android.util.Log

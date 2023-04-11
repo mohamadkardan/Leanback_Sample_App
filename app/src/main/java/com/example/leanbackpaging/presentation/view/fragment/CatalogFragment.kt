@@ -11,14 +11,14 @@ import androidx.leanback.widget.HeaderItem
 import androidx.leanback.widget.ListRow
 import androidx.leanback.widget.ListRowPresenter
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagingData
+import com.example.leanbackpaging.data.util.Resource
+import com.example.leanbackpaging.model.Genre
 import com.example.leanbackpaging.model.Movie
 import com.example.leanbackpaging.presentation.view.getMoviePagingAdapter
 import com.example.leanbackpaging.presentation.view.itempresenter.MoviesCardViewPresenter
 import com.example.leanbackpaging.presentation.viewmodel.CatalogViewModel
-import com.util.isAdapterNotEmpty
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -27,6 +27,8 @@ class CatalogFragment : BrowseSupportFragment() {
 
     private lateinit var mRowsAdapter: ArrayObjectAdapter
     private val catalogViewModel: CatalogViewModel by viewModels()
+    val listRowAdapter = ArrayObjectAdapter(MoviesCardViewPresenter())
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -34,12 +36,33 @@ class CatalogFragment : BrowseSupportFragment() {
         mRowsAdapter = ArrayObjectAdapter(ListRowPresenter())
         adapter = mRowsAdapter
         getPopularTVShows()
+        getMoviesGenres()
+    }
+
+    private fun getMoviesGenres() {
+        catalogViewModel.getGenresList().observe(viewLifecycleOwner) {
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    if (it.data != null) {
+//                        buildRowsAdapter(it.data)
+                    }
+                }
+                else -> {
+                    Toast.makeText(requireContext(), it.errorBody.toString(), Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+        }
     }
 
     private fun getPopularTVShows() {
         val pagingAdapter = getMoviePagingAdapter(MoviesCardViewPresenter())
         viewLifecycleOwner.lifecycleScope.launch {
             catalogViewModel.getPopularTvShowsWithPaging(1)
+                .catch {
+                    Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT)
+                        .show()
+                }
                 .collectLatest {
                     pagingAdapter.submitData(it)
                 }
@@ -61,16 +84,12 @@ class CatalogFragment : BrowseSupportFragment() {
         isHeadersTransitionOnBackEnabled = true
     }
 
-
-    private fun buildRowsAdapter(moviesList: List<Movie>) {
+    private fun buildRowsAdapter(genresList: List<Genre>) {
         mRowsAdapter = ArrayObjectAdapter(ListRowPresenter())
-        val listRowAdapter = ArrayObjectAdapter(MoviesCardViewPresenter()).apply {
-            for (movie in moviesList) {
-                add(movie)
-            }
+        for (genre in genresList) {
+            val headerItem = HeaderItem(genre.id.toLong(), genre.name)
+            mRowsAdapter.add(ListRow(headerItem, listRowAdapter))
         }
-        val headerItem = HeaderItem("Popular Shows")
-        mRowsAdapter.add(ListRow(headerItem, listRowAdapter))
         this.adapter = mRowsAdapter
     }
 
